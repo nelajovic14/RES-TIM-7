@@ -1,0 +1,11 @@
+CREATE TABLE BROJILO(
+Idb integer NOT NULL,
+Ime varchar(20) NOT NULL,
+Prz varchar(25) NOT NULL,
+Ulica varchar(25) NOT NULL,
+Broj integer NOT NULL,
+PostanskiBroj integer NOT NULL,
+Grad varchar(25) NOT NULL,
+
+CONSTRAINT brojilo_PK PRIMARY KEY (Idb)
+);
