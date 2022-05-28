@@ -1,0 +1,10 @@
+
+CREATE TABLE POTROSNJA(
+RbPotrosnje integer NOT NULL,
+BrojiloId integer NOT NULL,
+Potrosnjaa integer NOT NULL,
+Mesec varchar(25) NOT NULL,
+
+CONSTRAINT potrosnja_PK PRIMARY KEY (RbPotrosnje),
+CONSTRAINT potrosnja_FK FOREIGN KEY (BrojiloId) REFERENCES Brojilo (Idb)
+);
