@@ -1,0 +1,10 @@
+LISTA KORISNIKA(ZAPOSLENIH)
+Ime Prezime KorisnickoIme Sifra
+Marko Markovic Marko123 12345
+Jelena Jovanovic Jeca 123321
+Milica Milic MilicaMilic nekaSifra11
+Jovan Jovic Jovann 988777
+Marija Aleksic Mara 222222
+Nikola Nikolic Nikolaa 99999
+Dejan Jankovic DJankovic dj3333
+Andjela Andjelkovic Andjelaa 111111
