@@ -26,6 +26,7 @@ def konekcija():
     potrosnja=((poruka.split('\n')[2]).split(':')[1]).split(' ')[0]
     mesec=((poruka.split(' ')[3]).split(':')[1]).split(' ')[0]
 
+    upisUBazu(id,potrosnja,mesec)
     print("Server primio poruku od klijenta " + poruka)
 
     serverSocket.close()
@@ -33,5 +34,21 @@ def konekcija():
 def konekcijaKaBazi():
     con = cx_Oracle.connect('bp1/ftn@localhost')
     return con
+
+def IdPotrosnje():
+    con=konekcijaKaBazi()
+    sqlquery="select count(*) from POTROSNJA"
+    cursor = con.cursor()
+    n=cursor.execute(sqlquery)
+    return n
+
+def upisUBazu(id,potrosnja,mesec):
+    con=konekcijaKaBazi()
+    br=IdPotrosnje()
+    br+=1
+    sqlquery="insert into POTROSNJA values ("+br+","+id+","+potrosnja+","+mesec+")"
+    cursor = con.cursor()
+    cursor.execute(sqlquery)
+
 
 konekcija()
