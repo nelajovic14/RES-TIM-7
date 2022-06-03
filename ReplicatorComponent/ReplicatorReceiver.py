@@ -1,41 +1,23 @@
-import socket
+from ReplicatorKonekcija import konekcijaKlijent, konekcijaServer
+from ReplicatorStrukturaITajmer import *
+import time
 
-serverSocket = socket.socket()
-localHost = "127.0.0.1"
-port = 10002
+port_komunikacija = 10002
+port_reader_komunikacija = 10003
 
-try:
-    serverSocket.bind((localHost, port))
-except socket.error as e:
-    print(str(e))
+replikator_klijent, replikator_server = konekcijaServer(port_komunikacija)
+replikator_poruka = replikator_klijent.recv(2048)
+replikator_poruka = replikator_poruka.decode("utf-8")
 
-print("Waiting for a connection...")
-serverSocket.listen(5)
+print("Primljena poruka od replicator sender komponente: " + replikator_poruka)
 
-client, address = serverSocket.accept()
-print("Connect to: " + address[0] + ":" + str(address[1]))
+replikator_klijent.close()
+replikator_server.close()
 
-poruka = client.recv(2048)
-poruka=poruka.decode("utf-8")
-print("Server primio poruku od klijenta " + poruka)
+#sada se poruka prosledjuje na Reader, pa ce replicator receiver biti klijent koji salje paket ka reader serveru
+reader_klijent = konekcijaKlijent(port_reader_komunikacija)
+time.sleep(predefinisan_period) #ceka se 5 sekundi pre slanja podataka
+reader_klijent.send(str.encode(replikator_poruka))
+print("Poruka prosledjena ka Reader-u")
 
-def konekcija(poruka):
-    clientSocket = socket.socket()
-    localHost = "127.0.0.1"
-    port = 10003
-
-    print("Waiting for connection")
-
-    try:
-        clientSocket.connect((localHost, port))
-    except socket.error as e:
-        print(str(e))
-
-
-    clientSocket.send(str.encode(poruka))
-    print("Klijent uspesno poslao ID")
-
-
-    clientSocket.close()
-
-konekcija(poruka)
+reader_klijent.close()
