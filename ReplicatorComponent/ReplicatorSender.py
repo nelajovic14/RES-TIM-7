@@ -1,43 +1,37 @@
-import socket
+import ReplicatorStrukturaITajmer
+from ReplicatorKonekcija import konekcijaServer, konekcijaKlijent
+from ObradaPoruke import obrada
 
-serverSocket = socket.socket()
-localHost = "127.0.0.1"
-port = 10001
+port_komunikacije = 10001
+port_replicator_komunikacije = 10002
 
-try:
-    serverSocket.bind((localHost, port))
-except socket.error as e:
-    print(str(e))
+klijent, server = konekcijaServer(port_komunikacije)
 
-print("Waiting for a connection...")
-serverSocket.listen(5)
+poruka_od_writer = klijent.recv(2048)
+poruka_od_writer = poruka_od_writer.decode("utf-8")
 
-client, address = serverSocket.accept()
-print("Connect to: " + address[0] + ":" + str(address[1]))
+print("Primljena poruka od writer komponente: " + poruka_od_writer)
+id, potrosnja, mesec, ime_korisnika, prezime_korisnika = obrada(poruka_od_writer)
 
-poruka = client.recv(2048)
-poruka=poruka.decode("utf-8")
-print("Server primio poruku od klijenta " +poruka)
-    
-serverSocket.close()
+korisnicki_zahtev = [id, potrosnja, mesec, ime_korisnika, prezime_korisnika]
+ReplicatorStrukturaITajmer.privremeno_skladiste.append(korisnicki_zahtev)
 
-def konekcija(poruka):
-    clientSocket = socket.socket()
-    localHost = "127.0.0.1"
-    port = 10002
+print("Lista zahteva:")
+for i in range(len(ReplicatorStrukturaITajmer.privremeno_skladiste)):
+    print("Zahtev " + str(i) + ". ", end = ' ')
+    for j in range(len(ReplicatorStrukturaITajmer.privremeno_skladiste[i])):
+        if(j == len(ReplicatorStrukturaITajmer.privremeno_skladiste[i]) - 1):
+            print (ReplicatorStrukturaITajmer.privremeno_skladiste[i][j] + " ")
+        else:
+            print (ReplicatorStrukturaITajmer.privremeno_skladiste[i][j] + " ", end = ' ')
+        
+        
+klijent.close() 
+server.close() #u funkciji nije zatvoren socket, pa mora ovde i to se radi na kraju komunikacije
 
-    print("Waiting for connection")
+#sada se ovaj replicator konektuje kao klijent na replicator sender koji ce biti server
+replikator_klijent = konekcijaKlijent(port_replicator_komunikacije)
+replikator_klijent.send(str.encode(poruka_od_writer))
+print("Poruka prosledjena ka Replicator Receiver-u")
 
-    try:
-        clientSocket.connect((localHost, port))
-    except socket.error as e:
-        print(str(e))
-
-
-    clientSocket.send(str.encode(poruka))
-    print("Klijent uspesno poslao ID")
-
-
-    clientSocket.close()
-
-konekcija(poruka)
+replikator_klijent.close()
