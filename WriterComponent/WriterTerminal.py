@@ -69,7 +69,7 @@ def konekcija():
     message = UnosPodataka(imeKorisnika, prezimeKorisnika)
 
     clientSocket.send(str.encode(Message.__str__(message)))
-   
+    print("Korisnik" + " "+ imeKorisnika + " "+ prezimeKorisnika + " " + " je uspešno poslao podatke.")
 
     
     clientSocket.close()
