@@ -1,23 +1,69 @@
+import select, socket
 from ReplicatorKonekcija import konekcijaKlijent, konekcijaServer
 from ReplicatorStrukturaITajmer import *
+from ObradaPoruke import obrada
 import time
 
-port_komunikacija = 10002
-port_reader_komunikacija = 10003
+def upis_u_fajl(obradjena_poruka, putanja):
+    fajl = open(putanja, "a")
+    fajl.write(obradjena_poruka + "\n")
+    fajl.close()
 
-replikator_klijent, replikator_server = konekcijaServer(port_komunikacija)
-replikator_poruka = replikator_klijent.recv(2048)
-replikator_poruka = replikator_poruka.decode("utf-8")
+    return fajl
 
-print("Primljena poruka od replicator sender komponente: " + replikator_poruka)
+def prijem_upis_fajl(inputs, putanja):
+    inputready,outputready,exceptready = select.select(inputs,[],[], 1.0)
+    for s in inputready:
+        replikator_poruka = s.recv(2048)
+        replikator_poruka = replikator_poruka.decode("utf-8")
 
-replikator_klijent.close()
-replikator_server.close()
+        obradjena_poruka = obrada(replikator_poruka)
+        print("Primljena poruka od replicator sender komponente: " + obradjena_poruka)
+   
+        f = upis_u_fajl(obradjena_poruka, putanja)
 
-#sada se poruka prosledjuje na Reader, pa ce replicator receiver biti klijent koji salje paket ka reader serveru
-reader_klijent = konekcijaKlijent(port_reader_komunikacija)
-time.sleep(predefinisan_period) #ceka se 5 sekundi pre slanja podataka
-reader_klijent.send(str.encode(replikator_poruka))
-print("Poruka prosledjena ka Reader-u")
+def receiver():
+    port_komunikacija = 10002
+    port_reader_komunikacije = 10003
+    reader_aktivan = False
+    putanja = "ReplicatorComponent/bafer.txt"
+    naziv_komponente = "replicator-receiver"
 
-reader_klijent.close()
+    replikator_server = konekcijaServer(port_komunikacija, "replicator-receiver")
+
+    client, address = replikator_server.accept()
+    print("[Klijent " + naziv_komponente + "] povezan sa adrese " + address[0] + ':' + str(address[1]))
+    client.setblocking(0)
+    inputs = [client]
+
+    while True: 
+        prijem_upis_fajl(inputs, putanja)
+
+        if reader_aktivan == False:
+            reader_klijent, indikator = konekcijaKlijent(port_reader_komunikacije, "replicator-receiver")
+            if indikator != 1:
+                reader_aktivan = True
+                start_time = time.time()
+        else:
+            if(int(time.time() - start_time) >= predefinisan_period):
+                print("[Klijent " + naziv_komponente + "] proslo vreme: " + str(int(time.time() - start_time)))
+                print("Prosledjivanje poruka ka reader serveru...")
+                f = open(putanja, "r")
+                for line in f:
+                    try:
+                        reader_klijent.send(str.encode(line))
+                    except socket.error:
+                        reader_aktivan = False
+                        print("Reader server se ugasio")
+                        break
+
+                if reader_aktivan :
+                    f.close()
+                    f = open(putanja, "a")
+                    f.truncate(0)
+                    f.close()
+                    start_time = time.time()
+                else:
+                    f.close()
+
+receiver()
