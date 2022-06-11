@@ -1,7 +1,4 @@
-from cmath import e
-from contextlib import nullcontext
 from email import message
-from msilib.schema import Error
 from ntpath import join
 import socket
 from turtle import end_fill
@@ -9,9 +6,10 @@ from typing import List
 from WriterClass import Message
 
 
-def Logovanje():
+def logovanje():
     br = 0
     nijeUlogovan = True
+   
     while(nijeUlogovan):
         if(br == 0):
             print("--- POTREBNO JE DA SE ULOGUJETE DA BISTE MOGLI UNOSITI PODATKE ---\n")
@@ -21,38 +19,34 @@ def Logovanje():
         print("Unesite šifru:")
         šifra = input()
         
-       
         try:
-            fajl =  open("korisnici.txt")
-        except FileNotFoundError as e:
-            print(str(e))
-        
+          fajl = open("korisnici.txt")
+        except IOError as e:
+            raise IOError("Fajl ne postoji")
+            
         lines = [line.strip() for line in fajl]
         for i in lines[2:]:
             (imeKorisnika, prezimeKorisnika, korisničkoIme, šifraKorisnika) = i.split(" ")
             if (ime == korisničkoIme) and (šifra == šifraKorisnika) :
                 nijeUlogovan = False
-                fajl.close() 
                 print("Uspešno ste se ulogovali kao " + imeKorisnika +  " " + prezimeKorisnika)
+               
                 return(imeKorisnika, prezimeKorisnika) 
-
+        fajl.close()   
         if(nijeUlogovan):
            print("UNELI STE NEISPRAVNO KORISNIČKO IME ILI LOZINKU! POKUŠAJTE PONOVO!")    
-     
-       
-    return True
     
-      
-       
+    
+    
+    
+    
 
-               
-def UnosPodataka(imeKorisnika, prezimeKorisnika):
+            
+def unos_podataka(imeKorisnika, prezimeKorisnika):
 
     print("--- Unos novih podataka ---- ") 
     print("Unesite ID korisnika: ")
     id = input()
-
-
 
     print("Unesite trenutnu potrošnju vode korisnika: ")
     potrošnja = input()
@@ -61,6 +55,8 @@ def UnosPodataka(imeKorisnika, prezimeKorisnika):
     mesec = input()
 
     Message.__init__(message, id, potrošnja, mesec, imeKorisnika, prezimeKorisnika)
+    
+    
     return message
 
 
@@ -76,18 +72,15 @@ def konekcija():
         clientSocket.connect((localHost, port))
     except socket.error as e:
         print(str(e))
-        
 
-    (imeKorisnika, prezimeKorisnika) = Logovanje() 
-    message = UnosPodataka(imeKorisnika, prezimeKorisnika)
+    (imeKorisnika, prezimeKorisnika) = logovanje()
+    while True: 
+         
+        message = unos_podataka(imeKorisnika, prezimeKorisnika)
 
-    clientSocket.send(str.encode(Message.__str__(message)))
-    print("Korisnik" + " "+ imeKorisnika + " "+ prezimeKorisnika + " " + " je uspešno poslao podatke.")
-
-    
+        clientSocket.send(str.encode(Message.__str__(message)))
+        print("Korisnik" + " "+ imeKorisnika + " "+ prezimeKorisnika + " " + " je uspešno poslao podatke.")
     clientSocket.close()
-    return True
-
-
+    
 konekcija()
 
