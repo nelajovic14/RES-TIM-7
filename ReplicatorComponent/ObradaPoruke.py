@@ -6,6 +6,5 @@ def obrada(poruka):
     id = redovi_poruke[1].split(": ")[1]
     potrosnja = redovi_poruke[2].split(": ")[1]
     mesec = redovi_poruke[3].split(": ")[1]
-    #print(id + " " + potrosnja + " " + mesec)
 
-    return id, potrosnja, mesec, ime_korisnika, prezime_korisnika
+    return id + ", " + potrosnja + ", " + mesec

@@ -1,41 +1,47 @@
 import socket
 
-def konekcijaKlijent(brojPorta):
+
+def konekcijaKlijent(brojPorta, tipKlijenta):
     clientSocket = socket.socket()
     localHost = "127.0.0.1"
-    port = brojPorta
+    indikator = 0
 
-    print("Cekanje na konekciju")
+    print("[Klijent " + tipKlijenta + "] pokusavanje konekcije na port " + str(brojPorta))
 
     try:
-        clientSocket.connect((localHost, port))
-        print("Konekcija na portu " + str(port) + " uspesna")
+        clientSocket.connect((localHost, brojPorta))
+        print("[Klijent " + tipKlijenta + "] konekcija na portu " + str(brojPorta) + " uspesna")
     except socket.error as e:
-        print(str(e))
+        #print("[Klijent " + tipKlijenta + "] server kojem se pristupa je nedostupan!")
+        indikator = 1
 
-    return clientSocket
+    return clientSocket, indikator
 
-    #clientSocket.send(str.encode(poruka))
-    #print("Klijent uspesno poslao ID")
+def vise_klijenata(connection, clientConnection, tipServera):
+    while True:
+        try:   
+            data = connection.recv(2048)
+            response = "[Server " + tipServera + "] pristigla poruka: "  + data.decode('utf-8')
+            print(response)
+            clientConnection.send(str.encode(response))
+        except ConnectionResetError:
+            print("Konekcija writer-a ugasena")
+            connection.close()
+            break   
 
-    #clientSocket.close()
-
-def konekcijaServer(brojPorta):
+def konekcijaServer(brojPorta, tipServera):
     serverSocket = socket.socket()
     localHost = "127.0.0.1"
-    port = brojPorta
 
     try:
-        serverSocket.bind((localHost, port))
+        serverSocket.bind((localHost, brojPorta))
     except socket.error as e:
         print(str(e))
 
-    print("Waiting for a connection...")
+    print("[Server " + tipServera + "] osluskivanje klijentskih zahteva...")
     serverSocket.listen(5)
 
-    client, address = serverSocket.accept()
-    print("Konektovano na: " + address[0] + ":" + str(address[1]))
-    return client, serverSocket
+    return serverSocket
 
 
 
