@@ -1,4 +1,7 @@
+from cmath import e
+from contextlib import nullcontext
 from email import message
+from msilib.schema import Error
 from ntpath import join
 import socket
 from turtle import end_fill
@@ -18,19 +21,26 @@ def Logovanje():
         print("Unesite šifru:")
         šifra = input()
         
-        fajl =  open("korisnici.txt")
+       
+        try:
+            fajl =  open("korisnici.txt")
+        except FileNotFoundError as e:
+            print(str(e))
+        
         lines = [line.strip() for line in fajl]
         for i in lines[2:]:
             (imeKorisnika, prezimeKorisnika, korisničkoIme, šifraKorisnika) = i.split(" ")
             if (ime == korisničkoIme) and (šifra == šifraKorisnika) :
                 nijeUlogovan = False
+                fajl.close() 
                 print("Uspešno ste se ulogovali kao " + imeKorisnika +  " " + prezimeKorisnika)
                 return(imeKorisnika, prezimeKorisnika) 
 
         if(nijeUlogovan):
            print("UNELI STE NEISPRAVNO KORISNIČKO IME ILI LOZINKU! POKUŠAJTE PONOVO!")    
      
-    fajl.close()    
+       
+    return True
     
       
        
@@ -41,6 +51,8 @@ def UnosPodataka(imeKorisnika, prezimeKorisnika):
     print("--- Unos novih podataka ---- ") 
     print("Unesite ID korisnika: ")
     id = input()
+
+
 
     print("Unesite trenutnu potrošnju vode korisnika: ")
     potrošnja = input()
@@ -64,6 +76,7 @@ def konekcija():
         clientSocket.connect((localHost, port))
     except socket.error as e:
         print(str(e))
+        
 
     (imeKorisnika, prezimeKorisnika) = Logovanje() 
     message = UnosPodataka(imeKorisnika, prezimeKorisnika)
@@ -73,6 +86,7 @@ def konekcija():
 
     
     clientSocket.close()
+    return True
 
 
 konekcija()
