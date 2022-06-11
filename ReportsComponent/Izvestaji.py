@@ -40,13 +40,15 @@ def IzvestajBrojilo(brojilo):
         f.write(str(x[2])+ "\n")
 
 
-print("Ukoliko zelite izvestaj za ulicu unesite 1, a za brojilo unesite 2: ")
+print("Ukoliko zelite izvestaj za ulicu unesite 1, a za brojilo unesite 2, za izlazak exit: ")
 br = input()
-if(br == "1"):
-    print("Unesite ulicu: ")
-    ulica = input()
-    IzvestajUlica(ulica)
-if(br == "2"):
-    print("Unesite id brojila: ")
-    brojilo = input()
-    IzvestajBrojilo(brojilo)
+while(br != "exit"):
+    if(br == "1"):
+        print("Unesite ulicu: ")
+        ulica = input()
+        IzvestajUlica(ulica)
+    if(br == "2"):
+        print("Unesite id brojila: ")
+        brojilo = input()
+        IzvestajBrojilo(brojilo)
+  
