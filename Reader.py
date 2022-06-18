@@ -5,94 +5,69 @@ import socket
 from KonekcijaKaBazi import Baza
 from konekcija import Konekcija
 
+connection_string='bp1/ftn@localhost'
+
+def splitovanje_parametara_za_bazu(poruka):
+    try:
+        id_brojila=poruka.split(',')[0]
+        potrosnja=poruka.split(',')[1]
+        mesec=poruka.split(',')[2]
+    except IndexError:
+        raise IndexError("Index out of the range") 
+    try:
+        id_brojila=int(id_brojila)
+        potrosnja=int(potrosnja)
+    except ValueError:
+        raise ValueError("Vrednosti nisu dobrog tipa")      
+    
+    if mesec not in ["januar","februar","mart","april","maj","jun","jul","avgust","septembar","oktobar","novembar","decembar"]:
+        raise ValueError("Month is not correct")
+    return(id_brojila,potrosnja,mesec)
+            
+
 def konekcija():
     konekcija=Konekcija(10003,"127.0.0.1")
+    konekcija.bind()
     konekcija.connect()
     poruka_provera=""
     while True:
         poruka=konekcija.get_poruka()
-        
-        print("poruka je "+poruka)
-        if poruka=="exit":
-            break
     
+        print("poruka je "+poruka)
+
         if poruka!="":
-            id_brojila=poruka.split(',')[0]
-            try:
-                id_brojila=int(id_brojila)
-            except TypeError:
-                raise TypeError("ID is not int")
-            potrosnja=poruka.split(',')[1]
-            try:
-                potrosnja=int(potrosnja)
-            except TypeError:
-                raise TypeError("Potrosnja is not int")
-                
-            mesec=poruka.split(',')[2]
+            id_brojila,potrosnja,mesec=splitovanje_parametara_za_bazu(poruka)
             if poruka_provera!=poruka:
-                upis_u_bazu(id_brojila,potrosnja,mesec)
+                upis_u_bazu(id_brojila,potrosnja,mesec,connection_string)
             
-            print("Upisano u bazu")
             poruka_provera=poruka
-    konekcija.close()
-    return True
 
-def konekcija_ka_bazi():
-    con = cx_Oracle.connect('bp1/ftn@localhost')
-    print("konekcija ka bazi")
-    print(con)
-    if con == nullcontext:
-        raise ValueError("Nemoguca konekcija sa bazom")
-    return con
-
-def id_potrosnje():
-    con=konekcija_ka_bazi()
-    sqlquery="select count(*) from POTROSNJA"
-    cursor = con.cursor()
-    cursor.execute(sqlquery)   
-    n = cursor.fetchall()
-    print(n)
-    n=n[0][0]
-    n=int(n)
-    print(n)
-    return n
 
 def provera_id(id,mesec):
-    con=konekcija_ka_bazi()
-    cursor = con.cursor()
     sqlquery="select IME from BROJILO where Idb="+str(id)
-    cursor.execute(sqlquery)
-    n=cursor.fetchall()
+    baza=Baza(connection_string)
+    n=baza.do_query_with_result(sqlquery)
     print(n)
     if n ==[]:
         return False
 
-    sqlquery="select RBPOTROSNJE from POTROSNJA where mesec="+'\''+mesec+'\''+" and BROJILOID="+str(id)
-    cursor.execute(sqlquery)
-    m=cursor.fetchall()
+    sqlquery="select BROJILOID from POTROSNJAKORISNIKA where mesec="+'\''+mesec+'\''+" and BROJILOID="+str(id)
+    m=baza.do_query_with_result(sqlquery)
 
     if m==[]:
         return True
     else:
         return False
     
-        
 
-
-def upis_u_bazu(id,potrosnja,mesec):
-    
-    if mesec not in ["januar","februar","mart","april","maj","jun","jul","avgust","septembar","oktobar","novembar","decembar"] :
-        raise NameError("Neispravan mesec")
-        
-    br=id_potrosnje()
-    br+=1
-   
-    baza=Baza('bp1/ftn@localhost')
+def upis_u_bazu(id,potrosnja,mesec,connection_string):   
+    baza=Baza(connection_string)
     if(provera_id(id,mesec)):
-        query="INSERT INTO POTROSNJA VALUES ("+str(br)+","+str(id)+","+str(potrosnja)+",\'"+str(mesec)+"\')"
+        query="INSERT INTO POTROSNJAKORISNIKA VALUES ("+str(id)+","+str(potrosnja)+",\'"+str(mesec)+"\')"
         baza.do_query(query)
-        return True
-    return False
-
-
-konekcija()
+        print("Upisan je podatak u bazu!")
+    else:
+        print("Podatak nije upisan u bazu!")
+        
+if __name__=="__main__":
+    konekcija()
