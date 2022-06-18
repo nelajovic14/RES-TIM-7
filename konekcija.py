@@ -1,33 +1,34 @@
 from contextlib import nullcontext
+from ctypes import WinError
+from math import e
 import socket
 
 class Konekcija:
-    def __init__(self,port,ipaddress) :
+    def __init__(self,port,ipaddress) :  
+        try:
+            int(port)
+        except ValueError:
+            raise ValueError("Pogresna port")  
         self.port=port
         self.ipaddress=ipaddress
-    def connect(self):
+    def bind_socket(self,ipaddress,port):
         self.server_socket = socket.socket()
-        server_socket=self.server_socket
-        local_host = self.ipaddress
-        port = self.port
 
         try:
-            server_socket.bind((local_host, port))
-        except socket.error as e:
-            print(str(e))
-
+            self.server_socket.bind((ipaddress, port))
+        except OSError:
+            raise OSError("WinError")
+        except OverflowError:
+            raise OverflowError("Wrong port")  
+    def connect(self):    
         print("Waiting for a connection...")
-        server_socket.listen(5)
+        self.server_socket.listen(5)       
 
-        client, address = server_socket.accept()
+        client, address = self.server_socket.accept()
         print("Connect to: " + address[0] + ":" + str(address[1]))
 
         self.client=client
-        #poruka = client.recv(2048)       
-        #poruka=poruka.decode("utf-8")
-        #self.poruka=poruka
-    def close(self):
-        self.server_socket.close()
+    
     def get_poruka(self):
         self.poruka=self.client.recv(2048)
         self.poruka=self.poruka.decode("utf-8")
