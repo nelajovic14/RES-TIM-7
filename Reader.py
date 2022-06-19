@@ -12,6 +12,7 @@ def splitovanje_parametara_za_bazu(poruka):
         id_brojila=poruka.split(',')[0]
         potrosnja=poruka.split(',')[1]
         mesec=poruka.split(',')[2]
+        
     except IndexError:
         raise IndexError("Index out of the range") 
     try:
@@ -20,22 +21,21 @@ def splitovanje_parametara_za_bazu(poruka):
     except ValueError:
         raise ValueError("Vrednosti nisu dobrog tipa")      
     
-    if mesec not in ["januar","februar","mart","april","maj","jun","jul","avgust","septembar","oktobar","novembar","decembar"]:
-        raise ValueError("Month is not correct")
+
     return(id_brojila,potrosnja,mesec)
             
 
 def konekcija():
     konekcija=Konekcija(10003,"127.0.0.1")
-    konekcija.bind()
+    konekcija.bind_socket('127.0.0.1',10003)
     konekcija.connect()
     poruka_provera=""
     while True:
         poruka=konekcija.get_poruka()
     
-        print("poruka je "+poruka)
+        if poruka!="":           
+            print("poruka je "+poruka)
 
-        if poruka!="":
             id_brojila,potrosnja,mesec=splitovanje_parametara_za_bazu(poruka)
             if poruka_provera!=poruka:
                 upis_u_bazu(id_brojila,potrosnja,mesec,connection_string)
@@ -47,7 +47,6 @@ def provera_id(id,mesec):
     sqlquery="select IME from BROJILO where Idb="+str(id)
     baza=Baza(connection_string)
     n=baza.do_query_with_result(sqlquery)
-    print(n)
     if n ==[]:
         return False
 
