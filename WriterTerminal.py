@@ -6,8 +6,8 @@ import socket
 from turtle import end_fill
 from typing import List
 
-from WriterComponent.WriterClass import Message
-from WriterComponent.Konekcija_client import KonekcijaClient
+from WriterClass import Message
+from KonekcijaWriter import KonekcijaClient
 
 
 def otvori_fajl(fajl):
