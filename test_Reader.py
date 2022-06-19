@@ -14,31 +14,22 @@ from unittest.mock import MagicMock, Mock,patch
   
 class TestReader(unittest.TestCase):
     def test_parametri(self):
-        poruka="5,85,jun"
-        excepted_response=splitovanje_parametara_za_bazu(poruka)
+        excepted_response=splitovanje_parametara_za_bazu("5,85,jun")
         right_response=(5,85,'jun')
         self.assertEqual(excepted_response,right_response)
-    def test_with_wrong_month(self):
-        poruka="2,25,look"
-        self.assertRaises(ValueError,splitovanje_parametara_za_bazu,poruka)
+    
     def test_with_wrong_id(self):
-        poruka="l,25,jul"
-        self.assertRaises(ValueError,splitovanje_parametara_za_bazu,poruka)
+        self.assertRaises(ValueError,splitovanje_parametara_za_bazu,"l,25,jul")
     def test_with_wrong_potrosnja(self):
-        poruka="5,kl,jul"
-        self.assertRaises(ValueError,splitovanje_parametara_za_bazu,poruka)
+        self.assertRaises(ValueError,splitovanje_parametara_za_bazu,"5,kl,jul")
     def test_with_wrong_both(self):
-        poruka="l,kl,jul"
-        self.assertRaises(ValueError,splitovanje_parametara_za_bazu,poruka)
+        self.assertRaises(ValueError,splitovanje_parametara_za_bazu,"l,kl,jul")
     def test_with_wrong_commas(self):
-        poruka="5,12"
-        self.assertRaises(IndexError,splitovanje_parametara_za_bazu,poruka)
+        self.assertRaises(IndexError,splitovanje_parametara_za_bazu,"5,12")
     def test_with_wrong_commas2(self):
-        poruka="8"
-        self.assertRaises(IndexError,splitovanje_parametara_za_bazu,poruka)
+        self.assertRaises(IndexError,splitovanje_parametara_za_bazu,"8")
     def test_with_wrong_commas3(self):
-        poruka=""
-        self.assertRaises(IndexError,splitovanje_parametara_za_bazu,poruka)
+        self.assertRaises(IndexError,splitovanje_parametara_za_bazu,"")
       
     def test_provera_id(self):
         self.assertEqual(False,provera_id(5,"jul"))
@@ -55,28 +46,22 @@ class TestReader(unittest.TestCase):
         self.assertEqual(mock_print(),upis_u_bazu(5,12,'april',connection_string))
     def test_query(self):
         baza=Baza(connection_string)
-        query="INSERT INTO POTROSNJAKORISNIKA VALUES (5,5,\'jun\')"
-        self.assertRaises(cx_Oracle.DatabaseError,baza.do_query,query)
+        self.assertRaises(cx_Oracle.DatabaseError,baza.do_query,"INSERT INTO POTROSNJAKORISNIKA VALUES (5,5,\'jun\')")
     def test_query_with_parameters(self):
         baza=Baza(connection_string)
-        query="select count(*) from BROJILO"
-        self.assertIsNotNone(baza.do_query_with_result(query))
+        self.assertIsNotNone(baza.do_query_with_result("select count(*) from BROJILO"))
     def test_query_with_parameters2(self):
         baza=Baza(connection_string)
-        query="select IME from BROJILO where Idb=1"
-        self.assertIsNotNone(baza.do_query_with_result(query))
+        self.assertIsNotNone(baza.do_query_with_result("select IME from BROJILO where Idb=1"))
     def test_query_with_parameters3(self):
         baza=Baza(connection_string)
-        query="select IME from BROJILO where Idbrojila=10"
-        self.assertRaises(cx_Oracle.DatabaseError,baza.do_query_with_result,query)
+        self.assertRaises(cx_Oracle.DatabaseError,baza.do_query_with_result,"select IME from BROJILO where Idbrojila=10")
     def test_query_with_parameters4(self):
         baza=Baza(connection_string)
-        query="select MESEC from POTROSNJAKORISNIKA where Idb=5"
-        self.assertRaises(cx_Oracle.DatabaseError,baza.do_query_with_result,query)
+        self.assertRaises(cx_Oracle.DatabaseError,baza.do_query_with_result,"select MESEC from POTROSNJAKORISNIKA where Idb=5")
     def test_query_with_parameters5(self):
         baza=Baza(connection_string)
-        query="select IME from BROJILO where Idb=5"
-        self.assertAlmostEqual(baza.do_query_with_result(query),[])
+        self.assertAlmostEqual(baza.do_query_with_result("select IME from BROJILO where Idb=5"),[])
     def test_execute(self):
         query="INSERT INTO POTROSNJA VALUES (555,1,50,\'novembar\')"
         mock_baza=Mock()
@@ -89,6 +74,8 @@ class TestReader(unittest.TestCase):
         mock_connect.client.recv.assert_called()
         mock_connect.server_socket.close()
         mock_connect.client.close()
+        
+    
         
    
     def test_connection_ipaddress(self):
